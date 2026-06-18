@@ -1,5 +1,5 @@
 import { ClipboardEvent, FormEvent, useEffect, useRef, useState } from 'react'
-import { ChatItem, DEFAULT_ROBOTS, LoginForm, Robot, fetchHistoryForRobots, formatFileSize, getCurrentAccountId, login, logout, sendFileToRobots, sendTextToRobots, setActiveRobots } from './nim'
+import { ChatItem, DEFAULT_ROBOTS, LoginForm, Robot, SendFileResult, fetchHistoryForRobots, formatFileSize, getCurrentAccountId, login, logout, sendFileToRobots, sendTextToRobots, setActiveRobots } from './nim'
 import './styles.css'
 
 const emptyForm: LoginForm = { appkey: '', accountId: '', token: '' }
@@ -230,9 +230,13 @@ export default function App() {
       const failed = results.filter((item) => item.status === 'rejected')
       const success = results.filter((item) => item.status === 'fulfilled')
       const allFailed = targetRobots.length > 0 && success.length === 0
+      const fulfilled = results.find((item): item is PromiseFulfilledResult<SendFileResult> => item.status === 'fulfilled')
+      const firstSentUrl = fulfilled?.value?.url
       const targetText = targetRobots.map((robot) => robot.name || robot.accountId).join('、')
-      setMessages((old) => old.map((item) => item.id === userMessage.id ? { ...item, status: allFailed ? 'failed' : 'sent' } : item))
-      setStatus(failed.length ? `文件发送完成，目标：${targetText}，成功 ${success.length} 个，失败 ${failed.length} 个` : `文件已发送给 ${targetText}`)
+      setMessages((old) => old.map((item) => item.id === userMessage.id ? { ...item, status: allFailed ? 'failed' : 'sent', fileUrl: firstSentUrl || item.fileUrl } : item))
+      setStatus(failed.length
+        ? `文件发送完成，目标：${targetText}，成功 ${success.length} 个，失败 ${failed.length} 个${firstSentUrl ? `，附件 URL：${firstSentUrl}` : ''}`
+        : `文件已发送给 ${targetText}${firstSentUrl ? `，附件 URL：${firstSentUrl}` : ''}`)
     } catch (error: any) {
       setMessages((old) => old.map((item) => item.id === userMessage.id ? { ...item, status: 'failed' } : item))
       setStatus(error?.message || '文件发送失败')

@@ -204,6 +204,13 @@ export async function sendTextToRobots(text: string, robots: Robot[]) {
   return Promise.allSettled(tasks)
 }
 
+export type SendFileResult = {
+  robot: Robot
+  message: any
+  attachment?: any
+  url?: string
+}
+
 export async function sendFileToRobots(file: File, robots: Robot[]) {
   if (!nim) throw new Error('请先登录')
   const targetRobots = robots.filter((robot) => robot.accountId.trim())
@@ -216,8 +223,10 @@ export async function sendFileToRobots(file: File, robots: Robot[]) {
       ? nim.V2NIMMessageCreator.createImageMessage(file, file.name)
       : nim.V2NIMMessageCreator.createFileMessage(file, file.name)
     const conversationId = makeP2PConversationId(robot.accountId.trim())
-    await nim.V2NIMMessageService.sendMessage(message, conversationId)
-    return robot
+    const result = await nim.V2NIMMessageService.sendMessage(message, conversationId)
+    const sentMessage = result?.message || result || message
+    const attachment = sentMessage?.attachment || sentMessage?.attach || sentMessage?.body?.attachment
+    return { robot, message: sentMessage, attachment, url: attachment?.url } as SendFileResult
   })
 
   return Promise.allSettled(tasks)
