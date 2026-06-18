@@ -218,20 +218,15 @@ export async function sendFileToRobots(file: File, robots: Robot[]) {
 
   setActiveRobots(targetRobots)
   const isImage = file.type.startsWith('image/')
-  const uploadTask = nim.V2NIMStorageService.createUploadFileTask({ fileObj: file })
-  const metaInfo = await nim.V2NIMStorageService.uploadFileWithMetaInfo(uploadTask, () => undefined)
-  const uploadedUrl = metaInfo?.url
-  if (!uploadedUrl) throw new Error('文件上传失败：未获取到附件 URL')
-
   const tasks = targetRobots.map(async (robot) => {
     const message = isImage
-      ? nim.V2NIMMessageCreator.createImageMessage(uploadedUrl, file.name, undefined, metaInfo?.width, metaInfo?.height)
-      : nim.V2NIMMessageCreator.createFileMessage(uploadedUrl, file.name)
+      ? nim.V2NIMMessageCreator.createImageMessage(file, file.name)
+      : nim.V2NIMMessageCreator.createFileMessage(file, file.name)
     const conversationId = makeP2PConversationId(robot.accountId.trim())
     const result = await nim.V2NIMMessageService.sendMessage(message, conversationId)
     const sentMessage = result?.message || result || message
     const attachment = sentMessage?.attachment || sentMessage?.attach || sentMessage?.body?.attachment
-    return { robot, message: sentMessage, attachment, url: attachment?.url || uploadedUrl } as SendFileResult
+    return { robot, message: sentMessage, attachment, url: attachment?.url } as SendFileResult
   })
 
   return Promise.allSettled(tasks)
