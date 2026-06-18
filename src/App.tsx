@@ -31,6 +31,30 @@ function makeMentionPrefix(robots: Robot[]) {
   return robots.map((robot) => `@${robot.name || robot.accountId}`).join(' ') + (robots.length > 0 ? ' ' : '')
 }
 
+function isSameMessage(a: ChatItem, b: ChatItem) {
+  if (a.id && b.id && a.id === b.id) return true
+  if (a.role !== b.role) return false
+  if (a.robotAccountId !== b.robotAccountId) return false
+  if ((a.kind || 'text') !== (b.kind || 'text')) return false
+  if (a.text !== b.text) return false
+  if ((a.fileName || '') !== (b.fileName || '')) return false
+  if ((a.fileSize || 0) !== (b.fileSize || 0)) return false
+  return Math.abs(a.time - b.time) <= 5000
+}
+
+function mergeMessages(oldMessages: ChatItem[], incoming: ChatItem[]) {
+  const merged = [...oldMessages]
+  incoming.forEach((message) => {
+    const index = merged.findIndex((item) => isSameMessage(item, message))
+    if (index >= 0) {
+      merged[index] = { ...merged[index], ...message, status: message.status || merged[index].status }
+    } else {
+      merged.push(message)
+    }
+  })
+  return merged
+}
+
 export default function App() {
   const [form, setForm] = useState<LoginForm>(emptyForm)
   const [loggedIn, setLoggedIn] = useState(false)
@@ -89,7 +113,7 @@ export default function App() {
       await login(form, {
         onStatus: setStatus,
         onMessage: (items) => {
-          setMessages((old) => [...old, ...items])
+          setMessages((old) => mergeMessages(old, items))
           setWaitingReply(false)
         }
       })
@@ -97,7 +121,7 @@ export default function App() {
       setStatus('正在加载历史消息...')
       const history = await fetchHistoryForRobots(robots.filter((robot) => robot.accountId.trim()), 50)
       setMessages(history.length > 0
-        ? history
+        ? mergeMessages([], history)
         : [{ id: `sys-${Date.now()}`, role: 'system', text: '登录成功，暂无历史消息。现在输入一条消息即可开始聊天。', time: Date.now() }]
       )
       setStatus('已登录')
