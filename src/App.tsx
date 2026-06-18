@@ -66,7 +66,7 @@ export default function App() {
   const [mentionOpen, setMentionOpen] = useState(false)
   const [waitingReply, setWaitingReply] = useState(false)
   const bottomRef = useRef<HTMLDivElement | null>(null)
-  const inputRef = useRef<HTMLInputElement | null>(null)
+  const inputRef = useRef<HTMLTextAreaElement | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
@@ -231,7 +231,7 @@ export default function App() {
     setMentionOpen(value.endsWith('@'))
   }
 
-  function handlePaste(event: ClipboardEvent<HTMLInputElement>) {
+  function handlePaste(event: ClipboardEvent<HTMLTextAreaElement>) {
     const imageItem = Array.from(event.clipboardData.items).find((item) => item.kind === 'file' && item.type.startsWith('image/'))
     if (!imageItem) return
     const file = imageItem.getAsFile()
@@ -378,15 +378,22 @@ export default function App() {
             </div>
           )}
           <button type="button" className="fileButton" disabled={!loggedIn || loading} onClick={() => fileInputRef.current?.click()}>文件</button>
-          <input
+          <textarea
             ref={inputRef}
+            rows={1}
             value={draft}
             onChange={(e) => handleDraftChange(e.target.value)}
             onPaste={handlePaste}
             onFocus={() => setMentionOpen(draft.endsWith('@'))}
-            onKeyDown={(e) => { if (e.key === 'Escape') setMentionOpen(false) }}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') setMentionOpen(false)
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                if (!loading && draft.trim()) void handleSend(e)
+              }
+            }}
             disabled={!loggedIn || loading}
-            placeholder={loggedIn ? '输入 @ 选择机器人；不 @ 默认发给全部' : '请先登录'}
+            placeholder={loggedIn ? '输入 @ 选择机器人；Shift + Enter 换行，Enter 发送' : '请先登录'}
           />
           <input ref={fileInputRef} className="hiddenFileInput" type="file" onChange={(e) => handleFileChange(e.target.files?.[0])} />
           <button disabled={!loggedIn || loading || !draft.trim()}>发送</button>

@@ -17,7 +17,7 @@ body {
   overflow: hidden;
 }
 
-button, input {
+button, input, textarea {
   font: inherit;
 }
 
@@ -88,7 +88,7 @@ h1, h2, p {
   font-size: 14px;
 }
 
-input {
+input, textarea {
   width: 100%;
   border: 1px solid #cbd5e1;
   border-radius: 14px;
@@ -97,7 +97,16 @@ input {
   background: white;
 }
 
-input:focus {
+textarea {
+  min-height: 48px;
+  max-height: 138px;
+  resize: none;
+  overflow-y: auto;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+input:focus, textarea:focus {
   border-color: #4f46e5;
   box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
 }
@@ -360,7 +369,8 @@ button:disabled {
 .composer {
   position: relative;
   display: grid;
-  grid-template-columns: 86px 1fr 110px;
+  grid-template-columns: 86px minmax(0, 1fr) 110px;
+  align-items: end;
   gap: 12px;
   padding: 18px;
   border-top: 1px solid #e2e8f0;
