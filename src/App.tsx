@@ -3,6 +3,7 @@ import { ChatItem, DEFAULT_ROBOTS, LoginForm, Robot, fetchHistoryForRobots, form
 import './styles.css'
 
 const emptyForm: LoginForm = { appkey: '', accountId: '', token: '' }
+const inputPlaceholder = '输入 @ 选择机器人；Enter 换行，Shift + Enter 发送'
 
 function formatTime(time: number) {
   const date = new Date(time)
@@ -68,6 +69,7 @@ export default function App() {
   const [configOpen, setConfigOpen] = useState(true)
   const bottomRef = useRef<HTMLDivElement | null>(null)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
+  const mirrorRef = useRef<HTMLDivElement | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
@@ -101,12 +103,15 @@ export default function App() {
 
   useEffect(() => {
     const textarea = inputRef.current
-    if (!textarea) return
-    textarea.style.height = 'auto'
-    const nextHeight = Math.min(textarea.scrollHeight, 150)
-    textarea.style.height = `${Math.max(nextHeight, 48)}px`
-    textarea.style.overflowY = textarea.scrollHeight > 150 ? 'auto' : 'hidden'
-  }, [draft])
+    const mirror = mirrorRef.current
+    if (!textarea || !mirror) return
+
+    mirror.textContent = draft || inputPlaceholder
+    const maxHeight = Math.min(window.innerHeight * 0.34, 220)
+    const nextHeight = Math.min(Math.max(mirror.scrollHeight, 48), maxHeight)
+    textarea.style.height = `${nextHeight}px`
+    textarea.style.overflowY = mirror.scrollHeight > maxHeight ? 'auto' : 'hidden'
+  }, [draft, loggedIn])
 
   const robotSummary = robots
     .filter((robot) => robot.accountId.trim())
@@ -395,6 +400,7 @@ export default function App() {
             </div>
           )}
           <button type="button" className="fileButton" disabled={!loggedIn || loading} onClick={() => fileInputRef.current?.click()}>文件</button>
+          <div ref={mirrorRef} className="textareaMirror" aria-hidden="true" />
           <textarea
             ref={inputRef}
             rows={1}
@@ -410,7 +416,7 @@ export default function App() {
               }
             }}
             disabled={!loggedIn || loading}
-            placeholder={loggedIn ? '输入消息，@ 可选机器人' : '请先登录'}
+            placeholder={loggedIn ? inputPlaceholder : '请先登录'}
           />
           <input ref={fileInputRef} className="hiddenFileInput" type="file" onChange={(e) => handleFileChange(e.target.files?.[0])} />
           <button disabled={!loggedIn || loading || !draft.trim()}>发送</button>

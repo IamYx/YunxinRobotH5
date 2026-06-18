@@ -105,12 +105,32 @@ input, textarea {
 
 textarea {
   min-height: 48px;
-  max-height: 150px;
+  max-height: min(34dvh, 220px);
   resize: none;
   overflow-y: hidden;
   line-height: 1.5;
   white-space: pre-wrap;
   transition: height 0.12s ease;
+}
+
+.textareaMirror {
+  position: absolute;
+  left: 104px;
+  right: 122px;
+  bottom: 18px;
+  z-index: -1;
+  min-height: 48px;
+  max-height: min(34dvh, 220px);
+  padding: 13px 14px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  font: inherit;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 textarea::placeholder {
@@ -725,10 +745,16 @@ button:disabled {
     line-height: 1.45;
   }
 
-  textarea:placeholder-shown {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  .textareaMirror {
+    left: 68px;
+    right: 82px;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+    min-height: 44px;
+    max-height: min(34dvh, 220px);
+    padding: 10px 11px;
+    border-radius: 12px;
+    font-size: 15px;
+    line-height: 1.45;
   }
 
   .replyLoading {
