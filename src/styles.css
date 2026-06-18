@@ -46,6 +46,12 @@ button, input, textarea {
   overflow-y: auto;
 }
 
+.configToggle,
+.configMask,
+.mobileOnly {
+  display: none;
+}
+
 .brand {
   display: flex;
   gap: 14px;
@@ -491,11 +497,12 @@ button:disabled {
   }
 
   .page {
+    position: relative;
     height: 100dvh;
     grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(0, 1fr);
-    gap: 8px;
-    padding: 8px;
+    grid-template-rows: minmax(0, 1fr);
+    gap: 0;
+    padding: 0;
     background: #f8fafc;
   }
 
@@ -504,10 +511,60 @@ button:disabled {
     box-shadow: 0 10px 28px rgba(30, 41, 59, 0.1);
   }
 
+  .mobileOnly {
+    display: inline-flex;
+    justify-content: center;
+  }
+
+  .configToggle {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 10px);
+    right: 12px;
+    z-index: 30;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 13px;
+    border: 1px solid rgba(79, 70, 229, 0.18);
+    border-radius: 999px;
+    color: #3730a3;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16);
+    backdrop-filter: blur(10px);
+    font-size: 13px;
+  }
+
+  .configMask {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: block;
+    background: rgba(15, 23, 42, 0.28);
+    backdrop-filter: blur(2px);
+  }
+
   .sidebar {
-    max-height: 34dvh;
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 10px);
+    left: 10px;
+    right: 10px;
+    z-index: 25;
+    max-height: min(78dvh, 680px);
     padding: 12px;
     gap: 10px;
+    transform-origin: top center;
+    transition: transform 0.18s ease, opacity 0.18s ease;
+  }
+
+  .sidebar.configClosed {
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(-12px) scale(0.98);
+  }
+
+  .sidebar.configOpen {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 
   .brand {
@@ -588,11 +645,13 @@ button:disabled {
 
   .chat {
     min-height: 0;
-    border-radius: 18px;
+    height: 100dvh;
+    border: 0;
+    border-radius: 0;
   }
 
   .chatHeader {
-    padding: 12px 14px;
+    padding: calc(env(safe-area-inset-top, 0px) + 12px) 72px 12px 14px;
   }
 
   .chatHeader h2 {
@@ -644,7 +703,7 @@ button:disabled {
   .composer {
     grid-template-columns: 58px minmax(0, 1fr) 72px;
     gap: 8px;
-    padding: 10px;
+    padding: 10px 10px calc(env(safe-area-inset-bottom, 0px) + 10px);
   }
 
   .composer button {
@@ -677,7 +736,7 @@ button:disabled {
 
 @media (max-width: 520px) {
   .sidebar {
-    max-height: 30dvh;
+    max-height: min(82dvh, 680px);
   }
 
   .robotsTitle,

@@ -65,6 +65,7 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [mentionOpen, setMentionOpen] = useState(false)
   const [waitingReply, setWaitingReply] = useState(false)
+  const [configOpen, setConfigOpen] = useState(true)
   const bottomRef = useRef<HTMLDivElement | null>(null)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -134,6 +135,7 @@ export default function App() {
         : [{ id: `sys-${Date.now()}`, role: 'system', text: '登录成功，暂无历史消息。现在输入一条消息即可开始聊天。', time: Date.now() }]
       )
       setStatus('已登录')
+      setConfigOpen(false)
     } catch (error: any) {
       setStatus(error?.message || `登录失败：${error?.code || '未知错误'}`)
     } finally {
@@ -147,6 +149,7 @@ export default function App() {
     setLoggedIn(false)
     setMessages([])
     setWaitingReply(false)
+    setConfigOpen(true)
     setStatus('未登录')
     setLoading(false)
   }
@@ -274,7 +277,11 @@ export default function App() {
 
   return (
     <main className="page">
-      <section className="panel sidebar">
+      {loggedIn && !configOpen && <button type="button" className="configToggle" onClick={() => setConfigOpen(true)}>配置</button>}
+
+      {configOpen && loggedIn && <button type="button" className="configMask" aria-label="关闭配置" onClick={() => setConfigOpen(false)} />}
+
+      <section className={`panel sidebar ${configOpen ? 'configOpen' : 'configClosed'}`}>
         <div className="brand">
           <div className="logo">YX</div>
           <div>
@@ -304,6 +311,7 @@ export default function App() {
             <span>当前账号</span>
             <strong>{getCurrentAccountId()}</strong>
             <button onClick={handleLogout} disabled={loading}>退出登录</button>
+            <button type="button" className="mobileOnly ghostButton" onClick={() => setConfigOpen(false)}>收起</button>
           </div>
         )}
 
