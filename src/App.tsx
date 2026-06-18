@@ -396,13 +396,13 @@ export default function App() {
             onFocus={() => setMentionOpen(draft.endsWith('@'))}
             onKeyDown={(e) => {
               if (e.key === 'Escape') setMentionOpen(false)
-              if (e.key === 'Enter' && !e.shiftKey) {
+              if (e.key === 'Enter' && e.shiftKey) {
                 e.preventDefault()
                 if (!loading && draft.trim()) void handleSend(e)
               }
             }}
             disabled={!loggedIn || loading}
-            placeholder={loggedIn ? '输入 @ 选择机器人；Shift + Enter 换行，Enter 发送' : '请先登录'}
+            placeholder={loggedIn ? '输入 @ 选择机器人；Enter 换行，Shift + Enter 发送' : '请先登录'}
           />
           <input ref={fileInputRef} className="hiddenFileInput" type="file" onChange={(e) => handleFileChange(e.target.files?.[0])} />
           <button disabled={!loggedIn || loading || !draft.trim()}>发送</button>
