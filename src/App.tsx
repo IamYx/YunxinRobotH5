@@ -98,6 +98,15 @@ export default function App() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  useEffect(() => {
+    const textarea = inputRef.current
+    if (!textarea) return
+    textarea.style.height = 'auto'
+    const nextHeight = Math.min(textarea.scrollHeight, 150)
+    textarea.style.height = `${Math.max(nextHeight, 48)}px`
+    textarea.style.overflowY = textarea.scrollHeight > 150 ? 'auto' : 'hidden'
+  }, [draft])
+
   const robotSummary = robots
     .filter((robot) => robot.accountId.trim())
     .map((robot) => `${robot.name || robot.accountId}（${robot.accountId}）`)

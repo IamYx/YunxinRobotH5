@@ -99,11 +99,12 @@ input, textarea {
 
 textarea {
   min-height: 48px;
-  max-height: 138px;
+  max-height: 150px;
   resize: none;
-  overflow-y: auto;
+  overflow-y: hidden;
   line-height: 1.5;
   white-space: pre-wrap;
+  transition: height 0.12s ease;
 }
 
 input:focus, textarea:focus {
