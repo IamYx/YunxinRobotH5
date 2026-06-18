@@ -194,14 +194,19 @@ export async function sendTextToRobots(text: string, robots: Robot[]) {
   if (!content || targetRobots.length === 0) return []
 
   setActiveRobots(targetRobots)
-  const tasks = targetRobots.map(async (robot) => {
-    const message = nim.V2NIMMessageCreator.createTextMessage(content)
-    const conversationId = makeP2PConversationId(robot.accountId.trim())
-    await nim.V2NIMMessageService.sendMessage(message, conversationId)
-    return robot
-  })
+  const results: PromiseSettledResult<Robot>[] = []
+  for (const robot of targetRobots) {
+    try {
+      const message = nim.V2NIMMessageCreator.createTextMessage(content)
+      const conversationId = makeP2PConversationId(robot.accountId.trim())
+      await nim.V2NIMMessageService.sendMessage(message, conversationId)
+      results.push({ status: 'fulfilled', value: robot })
+    } catch (reason) {
+      results.push({ status: 'rejected', reason })
+    }
+  }
 
-  return Promise.allSettled(tasks)
+  return results
 }
 
 export type SendFileResult = {
@@ -218,18 +223,23 @@ export async function sendFileToRobots(file: File, robots: Robot[]) {
 
   setActiveRobots(targetRobots)
   const isImage = file.type.startsWith('image/')
-  const tasks = targetRobots.map(async (robot) => {
-    const message = isImage
-      ? nim.V2NIMMessageCreator.createImageMessage(file, file.name)
-      : nim.V2NIMMessageCreator.createFileMessage(file, file.name)
-    const conversationId = makeP2PConversationId(robot.accountId.trim())
-    const result = await nim.V2NIMMessageService.sendMessage(message, conversationId)
-    const sentMessage = result?.message || result || message
-    const attachment = sentMessage?.attachment || sentMessage?.attach || sentMessage?.body?.attachment
-    return { robot, message: sentMessage, attachment, url: attachment?.url } as SendFileResult
-  })
+  const results: PromiseSettledResult<SendFileResult>[] = []
+  for (const robot of targetRobots) {
+    try {
+      const message = isImage
+        ? nim.V2NIMMessageCreator.createImageMessage(file, file.name)
+        : nim.V2NIMMessageCreator.createFileMessage(file, file.name)
+      const conversationId = makeP2PConversationId(robot.accountId.trim())
+      const result = await nim.V2NIMMessageService.sendMessage(message, conversationId)
+      const sentMessage = result?.message || result || message
+      const attachment = sentMessage?.attachment || sentMessage?.attach || sentMessage?.body?.attachment
+      results.push({ status: 'fulfilled', value: { robot, message: sentMessage, attachment, url: attachment?.url } })
+    } catch (reason) {
+      results.push({ status: 'rejected', reason })
+    }
+  }
 
-  return Promise.allSettled(tasks)
+  return results
 }
 
 export function formatFileSize(size?: number) {
