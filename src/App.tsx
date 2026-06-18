@@ -410,7 +410,7 @@ export default function App() {
               }
             }}
             disabled={!loggedIn || loading}
-            placeholder={loggedIn ? '输入 @ 选择机器人；Enter 换行，Shift + Enter 发送' : '请先登录'}
+            placeholder={loggedIn ? '输入消息，@ 可选机器人' : '请先登录'}
           />
           <input ref={fileInputRef} className="hiddenFileInput" type="file" onChange={(e) => handleFileChange(e.target.files?.[0])} />
           <button disabled={!loggedIn || loading || !draft.trim()}>发送</button>
